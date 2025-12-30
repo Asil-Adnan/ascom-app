@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 10% 98%;
+    --foreground: 222 47% 11%;
+    --primary: 356 85% 55%;
+    --primary-foreground: 0 0% 100%;
+  }
+}
+
+@layer components {
+  /* 
+     GLASS SYSTEM 
+     Level 1: The Base Canvas (Transparent)
+     Level 2: Frosted Panels (Heavy Blur)
+     Level 3: Interactive/Floating (Crisp)
+  */
+
+  .glass-panel {
+    @apply bg-white/40 backdrop-blur-2xl border border-white/40 shadow-lg;
+  }
+
+  /* The main container for Services/Content */
+  .glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    border-radius: 24px;
+  }
+
+  /* Buttons and Floating elements */
+  .glass-button {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .glass-button:hover {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .glass-button:active {
+    transform: translateY(0);
+  }
+
+  /* Text Input Fields */
+  .glass-input {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    color: #1a202c;
+    transition: all 0.2s;
+  }
+
+  .glass-input:focus {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.8);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Animations */
+@keyframes aurora-float {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  33% {
+    transform: translate(30px, -50px) rotate(10deg);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) rotate(-5deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes particle-rise {
+  0% {
+    transform: translateY(100vh) scale(0);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translateY(-10vh) scale(1.5);
+    opacity: 0;
+  }
+}
+
+.animate-aurora {
+  animation: aurora-float 20s infinite ease-in-out;
+}
+
+.animate-particle {
+  animation: particle-rise 15s infinite linear;
+}
+
+/* Bottom Dock Expansion Animation */
+/* Bottom Dock Vertical Swap Animation */
+.dock-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #1a202c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition-duration: 0.3s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
+}
+
+.dock-btn:hover {
+  width: 140px;
+  border-radius: 50px;
+  background-color: #ef4444;
+  /* red-500 */
+  color: white;
+  transition-duration: 0.3s;
+}
+
+/* Icon Animation */
+.dock-btn svg {
+  transition-duration: 0.3s;
+  position: absolute;
+  /* Keep it centered initially */
+}
+
+
+.dock-btn:hover svg {
+  /* Push icon further down to avoid overlap */
+  transform: translateY(90%) scale(1.5);
+  transition-duration: 0.3s;
+}
+
+/* Text Animation */
+.dock-btn-text {
+  position: absolute;
+  top: -30px;
+  /* Start above */
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  opacity: 0;
+  transition-duration: 0.3s;
+  pointer-events: none;
+}
+
+.dock-btn:hover .dock-btn-text {
+  top: 35%;
+  transform: translateY(-50%);
+  opacity: 1;
+  font-size: 14px;
+  transition-duration: 0.3s;
+}
+
+/* Special Home Button Variant (Already Red) */
+.dock-btn.is-home {
+  background-color: #ef4444;
+  /* Red base */
+  color: white;
+}
+
+.dock-btn.is-home:hover {
+  background-color: #dc2626;
+  /* Darker red hover */
+  width: 140px;
+}
+
+/* Ensure Home Icon behaves same */
+.dock-btn.is-home svg {
+  color: white;
+}
