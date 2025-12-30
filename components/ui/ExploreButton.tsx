@@ -20,18 +20,18 @@ export function ExploreButton({ className, ...props }: ExploreButtonProps) {
                 // Hover Text Color -> White
                 "hover:text-gray-50",
                 // The Fill Effect (Before Pseudo)
-                "before:absolute before:-left-full before:-z-10 before:w-full before:aspect-square",
+                "before:absolute before:-left-full before:z-10 before:w-full before:aspect-square",
                 "before:rounded-full before:bg-gradient-to-r before:from-red-500 before:to-red-600",
                 "before:transition-all before:duration-700",
-                "before:group-hover:left-0 before:group-hover:w-full before:group-hover:scale-150",
+                "hover:before:left-0 hover:before:w-full hover:before:scale-150",
                 className
             )}
         >
-            Explore
+            <span className="relative z-20">Proceed</span>
             <svg
                 className={cn(
                     "w-8 h-8 p-2 rounded-full border border-gray-700",
-                    "text-gray-50 rotate-45",
+                    "text-gray-50 rotate-45 relative z-20",
                     "transition-all duration-300 ease-linear",
                     // Group Hover: Rotate arrow, Remove Border, White BG (Circle)
                     "group-hover:rotate-90 group-hover:border-none group-hover:bg-gray-50"

@@ -8,6 +8,11 @@ import { LayoutGrid, MessageSquare, Files, User, HelpCircle } from 'lucide-react
 export function BottomDock() {
     const pathname = usePathname();
 
+    // Hide on Bus Visa page to allow for new sidebar layout
+    if (pathname?.startsWith('/services/bus-visa')) {
+        return null;
+    }
+
     const navItems = [
         {
             label: 'Applications',

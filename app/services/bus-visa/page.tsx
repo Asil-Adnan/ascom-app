@@ -5,138 +5,176 @@ import { useRouter } from 'next/navigation';
 import { NeoCard } from '@/components/ui/NeoCard';
 import { NeoButton } from '@/components/ui/NeoButton';
 import { NeoInput } from '@/components/ui/NeoInput';
-import { ArrowLeft, MapPin, Calendar, Users, BusFront } from 'lucide-react';
+import { Users, BusFront, Bus } from 'lucide-react';
 import Link from 'next/link';
+
+import { HorizontalDatePicker } from '@/components/ui/HorizontalDatePicker';
+import { GlassSidebar } from '@/components/layout/GlassSidebar';
+
+const MOCK_BUSES = [
+    {
+        id: 1,
+        operator: 'Al Khan Transport',
+        departs: '08:00 AM',
+        arrives: '01:00 PM',
+        price: 350,
+        seats: 5,
+        type: 'Luxury AC',
+        badge: 'Visa Change Eligible'
+    },
+    {
+        id: 2,
+        operator: 'Oman Express',
+        departs: '09:30 AM',
+        arrives: '02:30 PM',
+        price: 320,
+        seats: 12,
+        type: 'Standard',
+        badge: 'Visa Change Eligible'
+    },
+    {
+        id: 3,
+        operator: 'Royal Travel',
+        departs: '11:00 AM',
+        arrives: '04:00 PM',
+        price: 400,
+        seats: 2,
+        type: 'VIP',
+        badge: 'Fast Track'
+    },
+    {
+        id: 4,
+        operator: 'Gulf Transport',
+        departs: '02:00 PM',
+        arrives: '07:00 PM',
+        price: 300,
+        seats: 20,
+        type: 'Standard',
+        badge: 'Visa Change Eligible'
+    },
+];
 
 export default function BusSearchPage() {
     const router = useRouter();
     const [searchParams, setSearchParams] = useState({
-        from: 'Dubai',
-        to: 'Oman',
         date: '',
         passengers: 1
     });
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.push('/services/bus-visa/results');
-    };
-
     return (
-        <div className="w-full max-w-6xl mx-auto py-12 animate-in fade-in zoom-in duration-300">
+        <div className="min-h-screen bg-transparent">
 
-            {/* Header */}
-            <div className="flex items-center gap-4 mb-12">
-                <Link href="/dashboard">
-                    <button className="w-12 h-12 rounded-xl neo-btn flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors">
-                        <ArrowLeft size={22} strokeWidth={2.5} />
-                    </button>
-                </Link>
-                <div>
-                    <h1 className="text-3xl font-extrabold text-foreground">Bus Visa Change</h1>
-                    <p className="text-gray-500 font-medium">Book your visa change trip seamlessly.</p>
+            {/* 1. Floating Glass Sidebar */}
+            <GlassSidebar />
+
+            {/* 2. Main Content Wrapper (Offset by Sidebar Width) */}
+            <div className="pl-[320px] pr-8 pt-8 pb-12 flex gap-8 max-w-[1600px] mx-auto">
+
+                {/* CENTER: Main Content (Date Picker + Bus List) */}
+                <div className="flex-1 min-w-0">
+                    {/* Horizontal Date Scroller - Top aligned */}
+                    <div className="mb-6">
+                        <HorizontalDatePicker
+                            selectedDate={searchParams.date}
+                            onSelect={(d) => setSearchParams(prev => ({ ...prev, date: d }))}
+                        />
+                    </div>
+
+                    {/* Results List */}
+                    <div className="space-y-3 animate-in slide-in-from-bottom-4 duration-500">
+                        {!searchParams.date ? (
+                            <div className="py-24 text-center opacity-50 bg-white/30 rounded-3xl border border-white/40">
+                                <BusFront size={64} className="mx-auto text-gray-300 mb-6" />
+                                <p className="text-gray-400 font-bold text-lg">Select a travel date above to view available buses.</p>
+                            </div>
+                        ) : (
+                            MOCK_BUSES.concat(MOCK_BUSES).concat(MOCK_BUSES).slice(0, 9).map((bus, idx) => ( // Show 9 items
+                                <Link key={`${bus.id}-${idx}`} href={`/services/bus-visa/${bus.id}`}>
+                                    <NeoCard className="p-4 group hover:-translate-y-0.5 transition-transform cursor-pointer border-l-4 border-transparent hover:border-red-500">
+                                        <div className="flex items-center justify-between gap-6">
+
+                                            {/* Operator & Type */}
+                                            <div className="flex items-center gap-4 w-[30%]">
+                                                <div className="w-10 h-10 rounded-full neo-inset flex items-center justify-center text-gray-400 group-hover:text-red-500 transition-colors shrink-0">
+                                                    <Bus size={20} strokeWidth={1.5} />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <h3 className="font-bold text-gray-700 text-sm truncate">{bus.operator}</h3>
+                                                    <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-sm">{bus.type}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Timing */}
+                                            <div className="flex items-center justify-center gap-3 w-[40%]">
+                                                <div className="text-center">
+                                                    <p className="font-bold text-gray-700 text-sm">{bus.departs}</p>
+                                                    <p className="text-[9px] font-bold text-gray-400 uppercase">DXB</p>
+                                                </div>
+                                                <div className="flex-1 h-0.5 bg-gray-200 rounded-full relative mx-2 max-w-[60px]">
+                                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-gray-400 rounded-full group-hover:bg-red-500 transition-colors"></div>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="font-bold text-gray-700 text-sm">{bus.arrives}</p>
+                                                    <p className="text-[9px] font-bold text-gray-400 uppercase">OMN</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Price & Action */}
+                                            <div className="flex items-center justify-end gap-6 w-[30%]">
+                                                <div className="text-right">
+                                                    <p className="text-lg font-extrabold text-red-500">AED {bus.price}</p>
+                                                </div>
+                                                <NeoButton className="h-8 px-5 font-bold text-xs group-hover:text-white group-hover:bg-red-500 transition-colors">
+                                                    Select
+                                                </NeoButton>
+                                            </div>
+                                        </div>
+                                    </NeoCard>
+                                </Link>
+                            ))
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                {/* Main Form Area (Wide 7 cols) */}
-                <div className="lg:col-span-7">
-                    <NeoCard className="p-10">
-                        <h2 className="text-xl font-bold text-gray-700 mb-8 flex items-center gap-3">
-                            <span className="w-10 h-10 rounded-full neo-inset flex items-center justify-center text-red-500"><BusFront size={20} /></span>
-                            Find Your Bus
-                        </h2>
-
-                        <form onSubmit={handleSearch} className="space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-3">
-                                    <label className="text-sm font-bold text-gray-400 uppercase tracking-wider ml-1">From</label>
-                                    <div className="relative group">
-                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors" size={20} />
-                                        <NeoInput
-                                            value={searchParams.from}
-                                            readOnly
-                                            className="pl-12 h-14 font-bold text-gray-700"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <label className="text-sm font-bold text-gray-400 uppercase tracking-wider ml-1">Destination</label>
-                                    <div className="relative group">
-                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors" size={20} />
-                                        <NeoInput
-                                            value={searchParams.to}
-                                            readOnly
-                                            className="pl-12 h-14 font-bold text-gray-700"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-3">
-                                    <label className="text-sm font-bold text-gray-400 uppercase tracking-wider ml-1">Travel Date</label>
-                                    <div className="relative group">
-                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors" size={20} />
-                                        <NeoInput
-                                            type="date"
-                                            required
-                                            className="pl-12 h-14 font-medium text-gray-700"
-                                            value={searchParams.date}
-                                            onChange={(e) => setSearchParams({ ...searchParams, date: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <label className="text-sm font-bold text-gray-400 uppercase tracking-wider ml-1">Passengers</label>
-                                    <div className="relative group">
-                                        <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors" size={20} />
-                                        <NeoInput
-                                            type="number"
-                                            min={1}
-                                            max={10}
-                                            className="pl-12 h-14 font-bold text-gray-700"
-                                            value={searchParams.passengers}
-                                            onChange={(e) => setSearchParams({ ...searchParams, passengers: parseInt(e.target.value) })}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="pt-4">
-                                <NeoButton type="submit" size="lg" className="w-full h-16 text-lg font-bold tracking-wide text-red-600 hover:text-white hover:bg-red-500 transition-colors">
-                                    Search Available Buses
-                                </NeoButton>
-                            </div>
-                        </form>
+                {/* RIGHT SIDEBAR: Stats & Config */}
+                <div className="w-72 shrink-0 space-y-6 sticky top-8 h-fit">
+                    {/* Passenger Count */}
+                    <NeoCard className="p-5">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-gray-700 text-sm">Passengers</h3>
+                            <Users size={18} className="text-gray-400" />
+                        </div>
+                        <NeoInput
+                            type="number"
+                            min={1}
+                            max={10}
+                            className="h-12 font-bold text-gray-700 text-center text-lg shadow-inner"
+                            value={searchParams.passengers}
+                            onChange={(e) => setSearchParams({ ...searchParams, passengers: parseInt(e.target.value) })}
+                        />
                     </NeoCard>
-                </div>
 
-                {/* Right Side: Info / Stats (Wide 5 cols) */}
-                <div className="lg:col-span-5 space-y-8">
-                    <div className="neo-raised p-8 text-center space-y-4">
-                        <div className="w-20 h-20 mx-auto rounded-full neo-inset flex items-center justify-center text-red-500 mb-4">
-                            <BusFront size={40} strokeWidth={1.5} />
+                    <div className="neo-raised p-6 text-center space-y-4">
+                        <div className="w-16 h-16 mx-auto rounded-full neo-inset flex items-center justify-center text-red-500 mb-4">
+                            <BusFront size={32} strokeWidth={1.5} />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-700">Daily Trips to Oman</h3>
-                        <p className="text-gray-500">
-                            Comfortable, air-conditioned buses ensuring a smooth visa change journey.
+                        <h3 className="text-sm font-bold text-gray-700">Daily Trips</h3>
+                        <p className="text-xs text-gray-500 leading-relaxed px-2">
+                            Comfortable, air-conditioned buses ensuring a smooth journey every day.
                         </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="neo-raised p-6 text-center">
-                            <p className="text-3xl font-extrabold text-red-500 mb-1">AED 85</p>
-                            <p className="text-xs font-bold text-gray-400 uppercase">Starting Price</p>
-                        </div>
-                        <div className="neo-raised p-6 text-center">
-                            <p className="text-3xl font-extrabold text-red-500 mb-1">4.8/5</p>
-                            <p className="text-xs font-bold text-gray-400 uppercase">User Rating</p>
+                        <div className="pt-4 border-t border-gray-100 flex justify-between items-center text-xs px-2">
+                            <div className="text-center">
+                                <span className="font-extrabold text-red-500 block text-lg">85</span>
+                                <span className="text-gray-400 uppercase text-[9px] font-bold">AED Start</span>
+                            </div>
+                            <div className="text-center">
+                                <span className="font-extrabold text-red-500 block text-lg">4.8</span>
+                                <span className="text-gray-400 uppercase text-[9px] font-bold">Rating</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     );
