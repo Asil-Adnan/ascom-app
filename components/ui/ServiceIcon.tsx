@@ -26,7 +26,7 @@ export function ServiceIcon({ icon: Icon, label, isActive, onClick }: ServiceIco
                 "w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-3xl transition-all duration-300 relative overflow-hidden",
                 isActive
                     ? "bg-gradient-to-br from-red-500 to-red-600 shadow-[inset_6px_6px_12px_#991b1b,inset_-6px_-6px_12px_#ff6b6b]"
-                    : "bg-[#e0e5ec] shadow-[6px_6px_12px_#b8b9be,-6px_-6px_12px_#ffffff] hover:-translate-y-1 hover:shadow-[8px_8px_16px_#b8b9be,-8px_-8px_16px_#ffffff]"
+                    : "bg-[#EFE6E6] shadow-[8px_8px_16px_#D3C4C4,-8px_-8px_16px_#FFFFFF] hover:-translate-y-1 hover:shadow-[10px_10px_20px_#D3C4C4,-10px_-10px_20px_#FFFFFF]"
             )}>
                 {/* Hover Gradient Fill (Inactive Only) */}
                 {!isActive && (

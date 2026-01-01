@@ -10,13 +10,49 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   name      String
-  email     String   @unique
-  phone     String
-  role      String   @default("USER")
+  email     String?  @unique
+  phone     String?  @unique
+  username  String?  @unique // For Admins
+  password  String?          // For Admins (hashed)
+  otp       String?          // For Users (optional if using magic logic, but good for real impl)
+  role      String   @default("USER") // USER, ADMIN, SUPER_ADMIN
   createdAt DateTime @default(now())
 
+  profile      Profile?
   applications Application[]
   messages     Message[]
+
+  // Wallet
+  wallet       Wallet?
+
+  // OTP
+  otpCode      String?
+  otpExpiry    DateTime?
+}
+
+model Profile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Personal Details
+  firstName       String?
+  lastName        String?
+  gender          String?
+  dateOfBirth     DateTime?
+  nationality     String?
+  maritalStatus   String?
+  cityOfResidence String?
+  
+  // Passport Details
+  passportNumber  String?
+  passportExpiry  DateTime?
+  passportCountry String? // Issuing Country
+  
+  // Documents (Stored as JSON: [{ type: 'passport', url: '...' }, ...])
+  documents       String   @default("[]")
+  
+  updatedAt       DateTime @updatedAt
 }
 
 model Application {
@@ -42,6 +78,7 @@ model Message {
   senderId    String
   type        String      @default("TEXT")
   content     String
+  attachments String? // Stored as JSON string: [{ url: string, name: string, type: string }]
   createdAt   DateTime    @default(now())
   user        User?       @relation(fields: [userId], references: [id])
   userId      String?
@@ -94,4 +131,29 @@ model BusDate {
 
   @@index([busId])
   @@index([date])
+}
+
+model Wallet {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance     Float    @default(0.0)
+  currency    String   @default("AED")
+  
+  transactions WalletTransaction[]
+  
+  updatedAt   DateTime @updatedAt
+}
+
+model WalletTransaction {
+  id          String   @id @default(cuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  amount      Float
+  type        String   // 'CREDIT' | 'DEBIT'
+  reason      String?  // 'WELCOME_BONUS', 'PAYMENT', etc.
+  referenceId String?  // Optional link to Payment or Application
+  
+  createdAt   DateTime @default(now())
 }

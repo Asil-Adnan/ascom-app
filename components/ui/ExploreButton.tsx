@@ -13,14 +13,14 @@ export function ExploreButton({ className, ...props }: ExploreButtonProps) {
             {...props}
             className={cn(
                 "group relative flex items-center justify-center gap-3",
-                "px-8 py-3 rounded-full bg-[#e0e5ec] overflow-hidden",
+                "px-8 py-3 rounded-full bg-[#EFE6E6] overflow-hidden",
                 // Neumorphic Shadows (Base)
-                "shadow-[6px_6px_12px_#b8b9be,-6px_-6px_12px_#ffffff]",
+                "shadow-[8px_8px_16px_#D3C4C4,-8px_-8px_16px_#ffffff]",
                 "transition-all duration-300",
                 // Active State (Pressed)
-                "active:shadow-[inset_4px_4px_8px_#b8b9be,inset_-4px_-4px_8px_#ffffff] active:translate-y-0",
+                "active:shadow-[inset_4px_4px_8px_#D3C4C4,inset_-4px_-4px_8px_#ffffff] active:translate-y-0",
                 // Hover State (Move slightly & Fill)
-                "hover:-translate-y-0.5 hover:shadow-[8px_8px_16px_#b8b9be,-8px_-8px_16px_#ffffff]",
+                "hover:-translate-y-0.5 hover:shadow-[10px_10px_20px_#D3C4C4,-10px_-10px_20px_#ffffff]",
                 // Text Style
                 "text-slate-700 font-bold tracking-wide hover:text-white",
                 // Fill Effect (restored)

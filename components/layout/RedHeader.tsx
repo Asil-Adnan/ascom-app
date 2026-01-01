@@ -18,4 +18,3 @@ export function RedHeader() {
         </div>
     );
 }
-

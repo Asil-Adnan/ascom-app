@@ -3,22 +3,31 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@/types/schema';
 // import { db } from '@/lib/db'; // Deprecated
-import { loginAction, logoutAction, registerAction, getSessionAction } from '@/app/actions/auth';
+import { loginUserAction, loginAdminAction, logoutAction, registerAction, getSessionAction } from '@/lib/actions/auth';
+import { checkUserStatusAction, smartLoginAction, smartSignupAction } from '@/lib/actions/auth-smart';
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
-    login: (email: string) => Promise<void>;
+    loginUser: (contact: string, otp: string) => Promise<void>;
+    loginAdmin: (username: string, pass: string) => Promise<void>;
     register: (name: string, email: string, phone: string) => Promise<void>;
+    checkUserStatus: (identifier: string) => Promise<any>;
+    smartLogin: (identifier: string, secret: string, type: 'password' | 'otp') => Promise<any>;
+    smartRegister: (data: any) => Promise<any>;
     logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
     loading: true,
-    login: async () => { },
+    loginUser: async () => { },
+    loginAdmin: async () => { },
     register: async () => { },
+    checkUserStatus: async () => { },
+    smartLogin: async () => { },
+    smartRegister: async () => { },
     logout: async () => { }
 });
 
@@ -39,27 +48,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         checkSession();
     }, []);
 
-    const login = async (email: string) => {
-        console.log('[AuthContext] login attempt:', email);
-        const result = await loginAction(email);
-        if (result.success && result.user) {
-            console.log('[AuthContext] login success:', result.user);
+    const loginUser = async (contact: string, otp: string) => {
+        const result = await loginUserAction(contact, otp);
+        if (result.success && 'user' in result) {
             setUser(result.user as unknown as User);
-            router.push(result.user.role === 'ADMIN' ? '/admin' : '/dashboard');
+            router.push('/dashboard');
         } else {
-            console.log('[AuthContext] login failed');
-            alert('Login failed: ' + (result.error || 'Unknown error'));
+            const errorMsg = 'error' in result ? result.error : 'Unknown error';
+            alert('Login failed: ' + errorMsg);
+        }
+    };
+
+    const loginAdmin = async (username: string, pass: string) => {
+        const result = await loginAdminAction(username, pass);
+        if (result.success && 'user' in result) {
+            setUser(result.user as unknown as User);
+            router.push(result.user.role === 'SUPER_ADMIN' ? '/super-admin' : '/admin');
+        } else {
+            const errorMsg = 'error' in result ? result.error : 'Check credentials';
+            alert('Admin Login failed: ' + errorMsg);
         }
     };
 
     const register = async (name: string, email: string, phone: string) => {
         const result = await registerAction(name, email, phone);
-        if (result.success && result.user) {
+        if (result.success && 'user' in result) {
             setUser(result.user as unknown as User);
             router.push('/dashboard');
         } else {
-            alert('Registration failed: ' + result.error);
+            const errorMsg = 'error' in result ? result.error : 'Registration failed';
+            alert('Registration failed: ' + errorMsg);
         }
+    };
+
+    const checkUserStatus = async (identifier: string) => {
+        return await checkUserStatusAction(identifier);
+    };
+
+    const smartLogin = async (identifier: string, secret: string, type: 'password' | 'otp') => {
+        const result = await smartLoginAction(identifier, secret, type);
+        if (result.success && 'user' in result) {
+            setUser(result.user as unknown as User);
+            router.push('/dashboard');
+        }
+        return result;
+    };
+
+    const smartRegister = async (data: any) => {
+        const result = await smartSignupAction(data);
+        if (result.success && 'user' in result) {
+            setUser(result.user as unknown as User);
+            router.push('/dashboard');
+        }
+        return result;
     };
 
     const logout = async () => {
@@ -69,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, loading, loginUser, loginAdmin, register: async () => { }, checkUserStatus, smartLogin, smartRegister, logout }}>
             {children}
         </AuthContext.Provider>
     );

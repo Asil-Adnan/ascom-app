@@ -1,185 +1,178 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { db } from '@/lib/db';
-import { Application, Message } from '@/types/schema';
-import { NeoCard } from '@/components/ui/NeoCard';
-import { NeoButton } from '@/components/ui/NeoButton';
-import { NeoIcon } from '@/components/ui/NeoIcon';
-import { MessageSquare, Send, Search, FileText, User as UserIcon, MoreVertical } from 'lucide-react';
-// Removed date-fns import
+import { NeumorphicCard } from '@/components/ui/NeumorphicCard';
+import { getUserThreads, getThreadMessages, sendMessage } from '@/lib/actions/unified';
+import { Send, Paperclip, FileCheck } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function MessagesPage() {
     const { user } = useAuth();
-    const [applications, setApplications] = useState<Application[]>([]);
-    const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [threads, setThreads] = useState<any[]>([]);
+    const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
+    const [messages, setMessages] = useState<any[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    const [loading, setLoading] = useState(true);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Initial Load: Get threads (applications)
+    // Load Threads
     useEffect(() => {
-        if (user) {
-            db.getApplications(user.id).then(apps => {
-                setApplications(apps);
-                if (apps.length > 0) {
-                    setSelectedAppId(apps[0].id);
-                }
-                setLoading(false);
-            });
-        }
+        if (!user) return;
+        loadThreads();
     }, [user]);
 
-    // Load messages when thread is selected
+    // Load Messages when thread selected
     useEffect(() => {
-        if (selectedAppId) {
-            db.getMessages(selectedAppId).then(msgs => setMessages(msgs));
+        if (activeThreadId) {
+            loadMessages(activeThreadId);
         }
-    }, [selectedAppId]);
+    }, [activeThreadId]);
 
-    // Auto-scroll to bottom
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
-
-    const handleSendMessage = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newMessage.trim() || !selectedAppId || !user) return;
-
-        const sentMsg = await db.sendMessage(user.id, user.role, selectedAppId, newMessage);
-        setMessages([...messages, sentMsg]);
-        setNewMessage('');
+    const loadThreads = async () => {
+        try {
+            const data = await getUserThreads(user!.id);
+            setThreads(data);
+            if (data.length > 0 && !activeThreadId) {
+                setActiveThreadId(data[0].id);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const selectedApp = applications.find(a => a.id === selectedAppId);
+    const loadMessages = async (threadId: string) => {
+        const msgs = await getThreadMessages(threadId);
+        setMessages(msgs);
+    };
 
-    if (loading) return <div className="flex h-full items-center justify-center text-gray-400">Loading messages...</div>;
+    const handleSend = async () => {
+        if (!newMessage.trim() && !activeThreadId) return;
+
+        try {
+            // Optimistic update? Better to wait for simplicity first
+            await sendMessage(
+                user!.id,
+                'USER',
+                newMessage,
+                [], // TODO: Handle file upload UI
+                activeThreadId || undefined
+            );
+
+            setNewMessage('');
+            if (activeThreadId) await loadMessages(activeThreadId);
+            else await loadThreads(); // New thread created context
+
+        } catch (error) {
+            toast.error('Failed to send message');
+        }
+    };
+
+    if (isLoading) return <div className="p-8 text-center text-slate-500">Loading messages...</div>;
 
     return (
-        <div className="flex h-[calc(100vh-120px)] gap-8 animate-in fade-in duration-500">
+        <div className="w-full max-w-6xl mx-auto h-[80vh] flex gap-6 pt-6">
 
-            {/* LEFT SIDEBAR: THREAD LIST */}
-            <div className="w-1/3 flex flex-col space-y-6">
-                <NeoCard className="flex-1 flex flex-col overflow-hidden p-0">
-                    <div className="p-6 border-b border-gray-100 bg-white/50 backdrop-blur-md">
-                        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-3">
-                            <MessageSquare className="text-red-500" size={24} />
-                            Messages
-                        </h2>
-                        <div className="mt-4 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input
-                                type="text"
-                                placeholder="Search conversations..."
-                                className="w-full bg-gray-100 rounded-xl pl-10 pr-4 py-3 text-sm font-medium text-gray-700 outline-none focus:ring-2 focus:ring-red-100 transition-all"
-                            />
-                        </div>
-                    </div>
+            {/* Thread List - Left Panel */}
+            <NeumorphicCard className="w-1/3 min-w-[280px] flex flex-col overflow-hidden">
+                <div className="p-4 border-b border-slate-200/50">
+                    <h2 className="font-bold text-slate-700">Conversations</h2>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    <button
+                        onClick={() => setActiveThreadId(null)}
+                        className="w-full text-left p-3 rounded-xl bg-red-50 text-red-600 font-medium text-sm hover:bg-red-100 transition-colors"
+                    >
+                        + Start New Chat
+                    </button>
 
-                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                        {applications.length === 0 ? (
-                            <div className="text-center p-8 text-gray-400">No active applications found. Start a service to chat.</div>
-                        ) : (
-                            applications.map(app => (
-                                <div
-                                    key={app.id}
-                                    onClick={() => setSelectedAppId(app.id)}
-                                    className={`p-4 rounded-xl cursor-pointer transition-all border border-transparent
-                                        ${selectedAppId === app.id ? 'bg-red-50 border-red-100 shadow-inner' : 'hover:bg-gray-50'}
-                                    `}
-                                >
-                                    <div className="flex justify-between items-start mb-1">
-                                        <h4 className={`font-bold text-sm ${selectedAppId === app.id ? 'text-red-700' : 'text-gray-700'}`}>
-                                            {app.type.replace('-', ' ').toUpperCase()} ({app.id})
-                                        </h4>
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{app.status}</span>
-                                    </div>
-                                    <p className="text-xs text-gray-500 truncate">
-                                        Click to view updates and chat with support.
-                                    </p>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </NeoCard>
-            </div>
-
-            {/* RIGHT SIDE: CHAT WINDOW */}
-            <div className="flex-1 flex flex-col">
-                <NeoCard className="flex-1 flex flex-col overflow-hidden p-0 relative">
-                    {selectedApp ? (
-                        <>
-                            {/* Chat Header */}
-                            <div className="p-6 border-b border-gray-100 bg-white/80 backdrop-blur-md flex justify-between items-center z-10 shadow-sm">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                                        <FileText size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-gray-800">Application #{selectedApp.id}</h3>
-                                        <p className="text-sm text-green-600 font-bold flex items-center gap-1">
-                                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                            Support Agent Active
-                                        </p>
-                                    </div>
-                                </div>
-                                <button className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
-                                    <MoreVertical size={20} />
-                                </button>
+                    {threads.map(thread => (
+                        <button
+                            key={thread.id}
+                            onClick={() => setActiveThreadId(thread.id)}
+                            className={`w-full text-left p-4 rounded-2xl transition-all ${activeThreadId === thread.id
+                                    ? 'bg-white shadow-sm ring-1 ring-red-100'
+                                    : 'hover:bg-white/50'
+                                }`}
+                        >
+                            <div className="flex justify-between items-start mb-1">
+                                <span className="font-semibold text-slate-700 text-sm">
+                                    {thread.type === 'GENERAL_CHAT' ? 'Support Chat' : thread.type}
+                                </span>
+                                <span className="text-[10px] text-slate-400">
+                                    {new Date(thread.updatedAt).toLocaleDateString()}
+                                </span>
                             </div>
+                            <p className="text-xs text-slate-500 truncate">
+                                {thread.lastMessage?.content || 'No messages'}
+                            </p>
+                        </button>
+                    ))}
+                </div>
+            </NeumorphicCard>
 
-                            {/* Chat Messages */}
-                            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/50">
-                                {messages.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 text-sm">
-                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-300">
-                                            <MessageSquare size={32} />
-                                        </div>
-                                        <p>No messages yet. Start the conversation!</p>
-                                        <p className="text-xs mt-2">Ask about your application status, documents, or next steps.</p>
-                                    </div>
-                                ) : (
-                                    messages.map((msg) => {
-                                        const isMe = msg.senderId === user?.id;
-                                        return (
-                                            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                <div className={`max-w-[70%] rounded-2xl p-4 shadow-sm relative ${isMe ? 'bg-red-500 text-white rounded-br-none' : 'bg-white text-gray-700 border border-gray-100 rounded-bl-none'}`}>
-                                                    <p className="text-sm leading-relaxed">{msg.content}</p>
-                                                    <span className={`text-[10px] mt-2 block opacity-70 ${isMe ? 'text-red-100 text-right' : 'text-gray-400'}`}>
-                                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
+            {/* Chat Area - Right Panel */}
+            <NeumorphicCard className="flex-1 flex flex-col overflow-hidden relative" inset>
+
+                {/* Messages List */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    {messages.map((msg) => {
+                        const isMe = msg.role === 'USER';
+                        return (
+                            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[70%] p-4 rounded-2xl text-sm ${isMe
+                                        ? 'bg-red-500 text-white rounded-br-sm shadow-md'
+                                        : 'bg-white text-slate-700 rounded-bl-sm shadow-sm'
+                                    }`}>
+                                    <p>{msg.content}</p>
+                                    {msg.attachments && msg.attachments.length > 0 && (
+                                        <div className="mt-2 space-y-1">
+                                            {msg.attachments.map((file: any, i: number) => (
+                                                <div key={i} className="flex items-center gap-2 bg-black/10 p-2 rounded-lg">
+                                                    <FileCheck size={16} />
+                                                    <span className="truncate max-w-[150px]">{file.name}</span>
                                                 </div>
-                                            </div>
-                                        );
-                                    })
-                                )}
-                                <div ref={messagesEndRef} />
+                                            ))}
+                                        </div>
+                                    )}
+                                    <div className={`text-[10px] mt-1 ${isMe ? 'text-white/70' : 'text-slate-400'}`}>
+                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                </div>
                             </div>
-
-                            {/* Input Area */}
-                            <div className="p-6 bg-white border-t border-gray-100">
-                                <form onSubmit={handleSendMessage} className="flex gap-4">
-                                    <input
-                                        className="flex-1 h-14 bg-gray-100 rounded-xl px-6 text-gray-700 outline-none focus:ring-2 focus:ring-red-100 focus:bg-white transition-all neo-inset font-medium placeholder:text-gray-400"
-                                        placeholder="Type your message here..."
-                                        value={newMessage}
-                                        onChange={(e) => setNewMessage(e.target.value)}
-                                    />
-                                    <NeoButton type="submit" className={`w-14 h-14 rounded-xl flex items-center justify-center ${!newMessage.trim() ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!newMessage.trim()}>
-                                        <Send size={20} className="ml-1" />
-                                    </NeoButton>
-                                </form>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex items-center justify-center h-full text-gray-400 font-bold">
-                            Select an application to view messages
+                        );
+                    })}
+                    {!activeThreadId && (
+                        <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                            <Send size={48} className="mb-4 opacity-20" />
+                            <p>Start a new conversation</p>
                         </div>
                     )}
-                </NeoCard>
-            </div>
+                </div>
+
+                {/* Input Area */}
+                <div className="p-4 bg-white/50 backdrop-blur-md border-t border-slate-200/50 flex gap-3 items-center">
+                    <button className="p-2 hover:bg-slate-200/50 rounded-full text-slate-500 transition-colors">
+                        <Paperclip size={20} />
+                    </button>
+                    <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type your message..."
+                        className="flex-1 bg-transparent border-none outline-none text-slate-700 placeholder:text-slate-400"
+                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                    />
+                    <button
+                        onClick={handleSend}
+                        className="p-3 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-all hover:scale-105 active:scale-95"
+                    >
+                        <Send size={18} />
+                    </button>
+                </div>
+
+            </NeumorphicCard>
         </div>
     );
 }
