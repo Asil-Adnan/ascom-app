@@ -73,3 +73,5 @@ export async function getUserApplications(email?: string) {
         return { success: false, error: 'Failed to fetch applications' };
     }
 }
+
+
