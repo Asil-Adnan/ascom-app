@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { NeoCard } from '@/components/ui/NeoCard';
 import { NeoButton } from '@/components/ui/NeoButton';
 import { Filter, MoreHorizontal, Search } from 'lucide-react';
-import { MOCK_APPLICATIONS, getServiceIcon, Application } from '@/lib/mock-data';
+// import { MOCK_APPLICATIONS, getServiceIcon, Application } from '@/lib/mock-data'; // Legacy mock import
+import { getServiceIcon } from '@/lib/mock-data';
 
 export default function AdminApplicationsPage() {
     const [filter, setFilter] = useState('All');
@@ -22,11 +23,7 @@ export default function AdminApplicationsPage() {
         }
     };
 
-    const filteredApps = MOCK_APPLICATIONS.filter(app => {
-        const matchesFilter = filter === 'All' || app.type === filter;
-        const matchesSearch = app.user.name.toLowerCase().includes(search.toLowerCase()) || app.id.toLowerCase().includes(search.toLowerCase());
-        return matchesFilter && matchesSearch;
-    });
+    // const filteredApps = ... (Removed)
 
     return (
         <div className="space-y-6">
@@ -65,39 +62,12 @@ export default function AdminApplicationsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {filteredApps.map((app) => {
-                                const Icon = getServiceIcon(app.type);
-                                return (
-                                    <tr key={app.id} className="hover:bg-gray-50/30 transition-colors group">
-                                        <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{app.id}</td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-medium text-foreground">{app.user.name}</div>
-                                            <div className="text-xs text-muted-foreground">{app.description}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className="p-1.5 rounded-lg bg-gray-100 text-muted-foreground group-hover:bg-white group-hover:text-primary group-hover:shadow-sm transition-all">
-                                                    <Icon size={16} />
-                                                </div>
-                                                {app.type}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(app.status)}`}>
-                                                {app.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-muted-foreground">{app.date}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Link href={`/admin/applications/${app.id}`}>
-                                                <button className="text-muted-foreground hover:text-primary p-2 hover:bg-gray-100 rounded-lg transition-all">
-                                                    <MoreHorizontal size={18} />
-                                                </button>
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                            {/* Empty State */}
+                            <tr>
+                                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">
+                                    No applications found in the database.
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

@@ -13,9 +13,9 @@ export default function AdminLayout({
 
     const navItems = [
         { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-        { name: 'Applications', href: '/admin/applications', icon: FileText },
+        { name: 'Applications', href: '/admin/applications', icon: FileText }, // Need to verify this route's page
         { name: 'Bus Management', href: '/admin/bus-management', icon: Bus },
-        { name: 'Settings', href: '/admin/settings', icon: Settings },
+        { name: 'Settings', href: '/admin/apps/coming-soon', icon: Settings },
     ];
 
     return (

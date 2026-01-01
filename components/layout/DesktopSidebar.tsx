@@ -27,9 +27,18 @@ export function DesktopSidebar() {
 
     return (
         <aside className="fixed left-0 top-0 h-screen w-72 bg-white/50 backdrop-blur-xl border-r border-white/40 z-50 flex flex-col p-6 shadow-2xl shadow-gray-200/50">
-            {/* Brand Logo */}
             <div className="mb-10 px-2 mt-2">
-                <img src="/brand/logo-full.png" alt="AllSupport" className="w-[180px] h-auto" />
+                <Link href="/dashboard" className="inline-block transition-transform duration-300 hover:scale-105 active:scale-95 group">
+                    <img
+                        src="/brand/logo-full.png"
+                        alt="AllSupport"
+                        className="w-[180px] h-auto cursor-pointer"
+                    />
+                    {/* Subtle glass glow container behind/around if requested, or just apply effect to image */}
+                    {/* User asked for 'logo (and its small glass container)'. If no container exists, I'll add a subtle one or just animate the image block. */}
+                    {/* Given the existing code doesn't have a glass container, I will wrap it in a subtle one to satisfy the request. */}
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 rounded-xl -z-10 transition-colors duration-300 blur-xl" />
+                </Link>
             </div>
 
             {/* User Profile */}

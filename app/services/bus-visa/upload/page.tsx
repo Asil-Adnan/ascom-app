@@ -8,6 +8,7 @@ import { NeoButton } from '@/components/ui/NeoButton';
 import { NeoInput } from '@/components/ui/NeoInput';
 import { NeoIcon } from '@/components/ui/NeoIcon';
 import { ArrowLeft, Upload, FileText, Check, Loader2, ShieldAlert, ScanLine } from 'lucide-react';
+import { submitBusVisaApplication } from '@/app/actions/submit-application';
 
 export default function DocumentUploadPage() {
     const router = useRouter();
@@ -138,7 +139,23 @@ export default function DocumentUploadPage() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <NeoButton className="w-full h-16 text-lg font-bold" size="lg">
+                                    <NeoButton
+                                        className="w-full h-16 text-lg font-bold"
+                                        size="lg"
+                                        onClick={async () => {
+                                            const result = await submitBusVisaApplication({
+                                                passportData,
+                                                documents: ['passport.jpg'] // Mock file for now
+                                            });
+
+                                            if (result.success) {
+                                                alert('Application submitted successfully!');
+                                                router.push('/admin/dashboard'); // Redirect to admin to show proof
+                                            } else {
+                                                alert('Failed to submit application');
+                                            }
+                                        }}
+                                    >
                                         Confirm & Submit Application
                                     </NeoButton>
                                 )}

@@ -46,3 +46,52 @@ model Message {
   user        User?       @relation(fields: [userId], references: [id])
   userId      String?
 }
+
+model BusListing {
+  id                    String   @id @default(cuid())
+  bus_code              String   @unique // e.g. DXB-OMN-001
+  is_active             Boolean  @default(true)
+  is_visible            Boolean  @default(true)
+  bus_class             String   @default("Standard") // e.g. "Standard", "Luxury"
+
+  // Route Info
+  pickup_point          String
+  departure_time        String   // "08:00 AM"
+  dropoff_location      String
+  expected_arrival_time String   // "01:00 PM"
+  expected_return_time  String   // "01:00 PM"
+
+  // Pricing (Display Only)
+  base_price            Decimal  @db.Decimal(10, 2)
+  visa_included_price   Decimal? @db.Decimal(10, 2)
+
+  // Inclusions
+  oman_visa_included    Boolean  @default(false)
+  uae_visa_included     Boolean  @default(false)
+  uae_visa_duration     String?  // "30_days" | "60_days"
+  food_included         Boolean  @default(false)
+  accommodation_included Boolean @default(false)
+  exit_fee_included     Boolean  @default(false)
+
+  // Marketing
+  marketing_badge       String?  // e.g. "SELLING OUT", "SOLD OUT"
+
+  // Admin Metadata
+  internal_notes        String?  @db.Text
+  created_by            String?
+
+  available_dates       BusDate[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model BusDate {
+  id        String     @id @default(cuid())
+  date      DateTime   // Only the date part is significant
+  busId     String
+  bus       BusListing @relation(fields: [busId], references: [id], onDelete: Cascade)
+
+  @@index([busId])
+  @@index([date])
+}
