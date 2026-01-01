@@ -8,6 +8,7 @@ import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { BottomDock } from '@/components/layout/BottomDock';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -96,8 +97,11 @@ export default function RootLayout({
                     <AppShell>
                         {children}
                     </AppShell>
+                    <Toaster position="top-center" richColors closeButton />
                 </AuthProvider>
             </body>
         </html>
     );
 }
+
+

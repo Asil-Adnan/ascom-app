@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function submitBusVisaApplication(data: any) {
     try {
-        const { passportData, documents } = data;
+        const { passportData, documents, personalInfo, importantDates, busId } = data;
 
         // In a real app, you'd get the user ID from the session
         // Find a default user or create one for the application
@@ -13,15 +13,13 @@ export async function submitBusVisaApplication(data: any) {
         if (!user) {
             user = await prisma.user.create({
                 data: {
-                    name: 'Demo User',
+                    name: personalInfo?.name || 'Demo User',
                     email: 'demo@example.com',
-                    phone: '0000000000',
+                    phone: personalInfo?.phone || '0000000000',
                     role: 'USER'
                 }
             });
         }
-
-        // precise validation would happen here using Zod
 
         const applicationId = `APP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
@@ -30,14 +28,21 @@ export async function submitBusVisaApplication(data: any) {
                 id: applicationId,
                 userId: user.id,
                 type: 'BUS_VISA',
-                status: 'PENDING',
+                status: 'IN_PROCESS', // Updated status
                 step: 2,
-                data: JSON.stringify(passportData),
+                data: JSON.stringify({
+                    busId,
+                    passportData, // Keeping backward compat if needed, but likely redundant with below
+                    personalInfo,
+                    importantDates
+                }),
                 documents: JSON.stringify(documents || []),
             }
         });
 
         revalidatePath('/admin/dashboard');
+        revalidatePath('/user/applications'); // Revalidate user apps page
+
         return { success: true, applicationId };
 
     } catch (error) {

@@ -16,7 +16,7 @@ export default function BusDetailsPage() {
 
             {/* Header */}
             <div className="flex items-center gap-4 mb-12">
-                <Link href="/services/bus-visa/results">
+                <Link href="/services/bus-visa">
                     <button className="w-12 h-12 rounded-xl neo-btn flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors">
                         <ArrowLeft size={22} strokeWidth={2.5} />
                     </button>
